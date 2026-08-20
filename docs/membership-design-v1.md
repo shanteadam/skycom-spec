@@ -66,7 +66,7 @@ Each key carries an **origin**: an **opaque, client-set string** describing how 
 - **stores** the origin verbatim, per key, and **surfaces** it to clients on every attribution;
 - **authenticates only what it can** — the *signature* (this message was signed by this key) — and hands the origin alongside as **unverified metadata**.
 
-The **client** (or exchange plugin, or the user importing a key by hand) **authors** the origin string and **decides what it means** — what to surface, whether to warn, how to render trust. This supersedes the earlier "confidence tier" notion: the honest primitive is **objective provenance the client interprets**, not a protocol-assigned judgment. *(The contact-side `confidenceTier` is superseded by origin too; migrating it is a documented follow-up (§11).)*
+The **client** (or exchange plugin, or the user importing a key by hand) **authors** the origin string and **decides what it means** — what to surface, whether to warn, how to render trust. The honest primitive is **objective provenance the client interprets**, not a protocol-assigned judgment: the protocol records how a key was obtained and assigns it no meaning. This is the **same model the whole specification uses** — contact keys and group keys alike carry an opaque, client-set origin (`design-doc-v1.md` §7.1).
 
 ---
 
@@ -110,7 +110,6 @@ A key normally lives in **exactly one** context (a fresh persona per relationshi
 ## 11. Open items (deferred — documented, not resolved here)
 
 - **Group-persona key rotation / supersession** under append-only (how a member rotates a group key without a `remove`). Genuinely hard; not needed for a first working layer.
-- **Contact-side origin migration** — replacing the contact-side `confidenceTier` with the origin string. A deferred follow-up.
 - **Membership-event schema specifics** beyond the model above — deferred.
 - **Retrieval-privacy / transport interaction** (a group over a shared board) — transport is itself a deferred epoch (§10.1, §8.x).
 

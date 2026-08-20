@@ -428,7 +428,7 @@ This is deliberate, and it is why the mechanism is optional and **carries no def
 A per-relationship keystore entry contains:
 - **My private keys** for this relationship — Ed25519 (signing) + X25519 (encryption). [wrapped at rest per §5.4]
 - **Their public keys** for this relationship — Ed25519 + X25519, algorithm-tagged (§7.2).
-- **Local metadata** — including a **locally-computed confidence/security tier** (assigned by the exchange layer per `exchange-spec-v1.md` §6, never taken from the wire), plus any client labels. Messaging **reads** this but does not act on confidence; surfacing it is a client concern.
+- **Local metadata** — including an **opaque, client-set record of provenance** (an `origin`): the exchange layer records **how the key was obtained** (per `exchange-spec-v1.md` §6, **never taken from the wire**); the protocol assigns it no meaning and no behaviour depends on it. Plus any client labels. Messaging **reads** this but does not act on it; the client interprets and surfaces it in whatever vocabulary it chooses.
 
 Messaging **reads** entries (to seal, trial-decrypt, verify); the exchange layer **writes** them. Messaging never parses a contact bundle — that is an exchange-layer artifact that exists only until it becomes an entry.
 
