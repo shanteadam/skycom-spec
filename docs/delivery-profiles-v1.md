@@ -1,6 +1,6 @@
 # Delivery Profiles & Transport Framing — v1
 
-*Companion to `design-doc-v1.md`. This note introduces a security axis the base spec does not
+*Companion to `design-doc-v1.md`. This document introduces a security axis the base spec does not
 contemplate: `design-doc-v1` assumes **sealed-everything** (§3–§8 have no plaintext-content mode;
 §3.2's "as private as its transport allows" concerns **metadata** leakage of sealed traffic, not
 **content** plaintext). Graduated content-confidentiality is new protocol surface, specified here.*
@@ -60,7 +60,7 @@ reasoning that makes fragmentation "framing below the envelope" (#16).
 
 **Convergence (why framing is security-neutral).** Framing is lossless and reversible, so **any**
 framing of a message decodes/reassembles to **byte-identical envelope bytes → identical envelope
-hash (#4) → the same message**. Whole-vs-fragmented (L5), raw-vs-QR, one fragmentation vs another —
+hash (#4) → the same message**. Whole-vs-fragmented, raw-vs-QR, one fragmentation vs another —
 all converge to one node. A wrong framing label cannot downgrade you: it simply fails to decode →
 no valid envelope → rejected. Framing changes delivery, never identity or security.
 
@@ -94,7 +94,7 @@ sealed-covered) portion** of the envelope. Consequences:
 
 ### 3.2 Registry & extensibility  `[CONFORMANCE-REQUIRED]`
 
-`profile` is a **registered unsigned-integer code** from a spec-owned registry (same shape as A1's
+`profile` is a **registered unsigned-integer code** from a spec-owned registry (same shape as the
 algorithm-agility registry). Rationale for the representation:
 
 - **Not a UUID** — 16 bytes for a value from a small, *centrally specified* set is wrong-shaped;
@@ -152,8 +152,8 @@ causal_parents, profile_code, context/recipient binding)`. This makes `plaintext
 binding — with the body's confidentiality swapped from ciphertext to plaintext. Consequences:
 
 - **Replay is absorbed, not merely signed-against.** Because the envelope binds `timestamp` and
-  `causal_parents`, a replayed byte-identical copy has the **same envelope hash** → I1 dedup
-  collapses it → J7 drops it as a duplicate, exactly as for a sealed message. Replay protection is
+  `causal_parents`, a replayed byte-identical copy has the **same envelope hash** → de-duplication by
+  hash (`design-doc-v1.md` §11) collapses it and drops it as a duplicate, exactly as for a sealed message. Replay protection is
   **inherited for free** from being an envelope sibling; it is not extra machinery. (This is the
   decisive advantage over signing the body alone, which leaves lift-and-replay open.)
 - **Cross-context replay fails** — the persona is the **per-relationship** persona (#14), never a
@@ -247,7 +247,7 @@ core-side; the plugin is **key-blind**. A compromised transport plugin can then 
 deny delivery (§7 tier 2–3) but can **never** read a sealed body or forge the sender — *by
 construction*, not by trust. This is the structural expression of "confidentiality does not depend on
 plugin behavior," enforced the same way every other no-keys boundary in the build is (the reassembler
-owns no keys; the pool does no crypto; K6 imports only records).
+owns no keys; the pool does no crypto; attribution imports only records).
 
 ---
 
@@ -319,8 +319,8 @@ surface**, via the following construction:
 2. **The fingerprint binding is automatic.** Because the fingerprint travels **inside the signed
    body**, it is bound by skycom's normal envelope signature — no separate "sign this fingerprint"
    primitive is needed. Putting the fingerprint in a sealed message **is** the binding.
-3. **Verification is the normal receive path.** The peer's offer/answer is verified (G5) and attributed
-   to the contact (K6) before its fingerprint is trusted — existing surface.
+3. **Verification is the normal receive path.** The peer's offer/answer is verified (its signature is checked) and attributed
+   to the contact before its fingerprint is trusted — existing surface.
 4. **`[PROTOCOL-ENFORCED]` The plugin MUST enforce fingerprint-match before media flows.** The
    DTLS-SRTP handshake's peer certificate fingerprint **must** equal the one that arrived in the
    skycom-authenticated signaling message; if it does not, an intermediary (signaling server, TURN
@@ -415,16 +415,16 @@ iMessage plugin does.)
    (§5.2). Pin when the first non-raw encoding is needed by a transport.
 2. **`plaintext-signed + authenticator` binding detail** — the exact body↔attachment binding (§4.3).
    Pin when the profile is implemented.
-3. **Interaction with membership/group send (K5)** — a group send is already one signed envelope
-   fanned to N recipients (I6); with one-message-one-profile (§3.3), a mixed-audience group is N
+3. **Interaction with membership/group send** — a group send is already one signed envelope
+   fanned to N recipients; with one-message-one-profile (§3.3), a mixed-audience group is N
    separate sends per distinct profile. Confirm no additional construction is needed. (Believed clean;
    flagged for the implementing track.)
 
 ### 11.2 `[DEFERRED TRACK]` Streaming seal / large payloads — the "B" track
 
-The base spec assumes a **single AEAD over the whole envelope** (F3) and that **payloads fit in RAM**
+The base spec assumes a **single AEAD over the whole envelope** (`design-doc-v1.md` §5.3.1) and that **payloads fit in RAM**
 (the send path buffers the whole message; `fragment` takes the whole byte array; reassembly buffers
-before J7). That is fine for chat and small clips and **false for any large payload** — a multi-GB
+before the envelope is applied). That is fine for chat and small clips and **false for any large payload** — a multi-GB
 encrypted video cannot be single-AEAD-sealed or verified without buffering the whole thing. This is a
 **new sealing construction**, deferred to its own design track:
 
@@ -439,18 +439,14 @@ encrypted video cannot be single-AEAD-sealed or verified without buffering the w
   - **#4 identity** — is a large payload's message-id the hash of the whole thing (a full pass) or a
     **root hash of the chunk tree**? (Chunk-tree root enables streaming verification + partial
     integrity; changes how #4 is computed for these messages.)
-  - **`content_length` reopens** — L3 deferred the `content_length` **streaming** optimization as
+  - **`content_length` reopens** — reassembly deferred the `content_length` **streaming** optimization as
     "presumes a chunked seal we don't have." With a chunked seal we *do* have it, so streaming
-    reassembly (decrypt chunk 0 → learn extent → know how many chunks) becomes real. Revisit the L3
-    two-tier note.
-  - **Receive pipeline** — L5 assumes reassemble→whole-envelope→J7; a streamed payload may apply
+    reassembly (decrypt chunk 0 → learn extent → know how many chunks) becomes real. Revisit that
+    reassembly deferral.
+  - **Receive pipeline** — the receive path assumes reassemble→whole-envelope→apply; a streamed payload may apply
     progressively and must never require full buffering. The RAM assumption gets fixed here.
   - **Framing composes unchanged** — a chunked-sealed payload is still fragmented/encoded by the
     transport layer (§5); framing stays security-neutral and below the (now chunked) seal.
-- **Why it may move up the queue:** it fixes the foundational "payloads fit in RAM" assumption before
-  more code (the send path, more adapters) depends on it; and it is the direct prerequisite for
-  recorded voice/video **messages** (a near-term product interest). Its priority is earned by those
-  messages, **not** by live calls.
 
 ### 11.3 `[DEFERRED — CORE-INVOLVED]` Steganographic / format-coherent embedding
 
