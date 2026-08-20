@@ -66,7 +66,7 @@ Each key carries an **origin**: an **opaque, client-set string** describing how 
 - **stores** the origin verbatim, per key, and **surfaces** it to clients on every attribution;
 - **authenticates only what it can** — the *signature* (this message was signed by this key) — and hands the origin alongside as **unverified metadata**.
 
-The **client** (or exchange plugin, or the user importing a key by hand) **authors** the origin string and **decides what it means** — what to surface, whether to warn, how to render trust. This supersedes v0.1's "confidence tier": the honest primitive is **objective provenance the client interprets**, not a protocol-assigned judgment. *(The contact-side `confidenceTier` is superseded by origin too; migrating it is a documented follow-up (§11).)*
+The **client** (or exchange plugin, or the user importing a key by hand) **authors** the origin string and **decides what it means** — what to surface, whether to warn, how to render trust. This supersedes the earlier "confidence tier" notion: the honest primitive is **objective provenance the client interprets**, not a protocol-assigned judgment. *(The contact-side `confidenceTier` is superseded by origin too; migrating it is a documented follow-up (§11).)*
 
 ---
 
