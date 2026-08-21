@@ -135,7 +135,7 @@ specifies the following. (Per-actor threat tables in §7.)
 
 ### 4.1 `sealed` — registry entry `0` (the default)
 
-Today's construction: the media-typed payload is sealed to the recipient (§5.3 single-recipient
+Today's construction: the media-typed payload is sealed to the recipient (`design-doc-v1.md` §5.3 single-recipient
 seal). Properties: **content confidentiality + authenticity + per-relationship unlinkability**. No
 change from `design-doc-v1` except that the `profile=0` code is now explicit in the covered header.
 
@@ -234,7 +234,7 @@ normal. Key decisions:
 
 **Declared limit (threat table):** decoy-wrapping defeats **content inspection** of the body, not
 **metadata correlation** — the **existence, size, and timing** of the attachment remain observable
-(the traffic-analysis floor, §3.1). A transport that scans bodies is fooled; one that notices "this
+(the traffic-analysis floor, `design-doc-v1.md` §3.1). A transport that scans bodies is fooled; one that notices "this
 innocuous message always carries a ~2 KB attachment" is not. The UI must not over-trust the cover.
 
 ---
@@ -263,7 +263,7 @@ each property. The three tiers:
 2. **Guaranteed only if the plugin carries faithfully** (plugin can *deny*, not *defeat*):
    **delivery** of an intact message. A hostile plugin can drop/corrupt/stall — but corruption fails
    verification, so the failure mode is **non-delivery, never a forged or silently-downgraded
-   message**. (Availability was never guaranteed anyway — §8.5.)
+   message**. (Availability was never guaranteed anyway — `design-doc-v1.md` §8.5.)
 3. **Exposed to the plugin by *what it is given*, independent of the bytes**: the plugin necessarily
    sees its **configuration and routing surface** — recipient addresses on its transport, which
    contacts use it, send timing/frequency, message sizes, the `(profile, encoding)` framing. A plugin
@@ -401,13 +401,13 @@ iMessage plugin does.)
 - **#16 (seal-before-everything).** Framing (fragmentation + encoding + decoy) is below the envelope;
   `profile` is decided **before** sealing and lives **inside** the envelope. The two-layer split is a
   direct generalization of #16.
-- **#3 / §3.2–3.3 (exterior fields).** The `encoding` identifier and decoy are exterior,
+- **#3 / `design-doc-v1.md` §3.2–3.3 (exterior fields).** The `encoding` identifier and decoy are exterior,
   unauthenticated, adapter-conditional fields — each must pass the exterior three-tests
   (readable-by-transport OK, non-authoritative, safe-before-verify), which they do (security-neutral).
 - **One-time vector re-freeze** of all sealed-message vectors (§3.1) — pre-ship, mechanical but
   load-bearing (regenerate by implementation; keep the vector-integrity gate green).
 
-## 11. Open items, deferred tracks & sequencing
+## 11. Open items & deferred tracks
 
 ### 11.1 Small open items (pin when implemented)
 
@@ -464,21 +464,9 @@ only hard obligation. There is **no new core primitive** for calls, and secret-d
 a core track** — and explicitly *not* fused with the streaming-seal track (§11.2), which they share a
 word with and almost no architecture.
 
-### 11.5 Build sequence (as agreed)
-
-1. **This note** (`delivery-profiles-v1`) — land it (settled; independent of the below).
-2. **Transport-adapters bucket (M)** — close its one open design-fresh decision (the **key-ID prune
-   hint** encoding, §6.3) + review its decomposition, then its backlog. It **consumes** this note:
-   the adapter contract must carry the `profile` + framing, honor the key-blind boundary (§6), and
-   declare per-transport sizes/availability/**rate-cadence**. *(Note: the streaming-seal track may
-   reshape the adapter contract — see below — so M's contract should anticipate "carries a stream/file,
-   not just a message body.")*
-3. **Streaming seal / large payloads (B)** — §11.2. Its own design pass. Worth doing before M's
-   contract hardens **if** recorded voice/video messages or large files are near-term.
-4. **Live calls** — §8.1/§11.4. A plugin, whenever wanted; no core work.
-
-### 11.6 Not in scope here (belongs to the transport-adapters bucket)
+### 11.5 Not in scope here (the transport-adapter layer)
 
 The transport **adapter contract** itself (sizes, availability, rate/cadence, `send`/`inbound`), the
-**send-path assembly** (the §8.1-of-`design-doc` resolution chain), and the **key-ID prune hint**
-(§6.3) — those belong to the transport-adapters bucket (M), which **consumes** this note.
+**send-path assembly** (the `design-doc-v1.md` §8.1 resolution chain), and the **key-ID prune hint**
+(`design-doc-v1.md` §6.3) — those belong to the **transport-adapter layer**, which composes this note's
+profile and framing definitions.

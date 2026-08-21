@@ -78,7 +78,7 @@ The wire is **group-blind** (a message carries no group field). "Which context(s
 - Surface the node in **every** matching context (**0, 1, or many**). One message can appear in a group *and* a 1:1 if the same key is in both records.
 - **One node, always** — the DAG holds a single node per message (the causal-DAG ordering layer is unchanged, `design-doc-v1.md` §9/§10); context is a **read-side lens**, not a partition. There are no per-context DAGs.
 
-A key normally lives in **exactly one** context (a fresh persona per relationship — per-relationship isolation, §4.3). So a message normally fans to exactly one view. A key matching **more than one** context is the **anomaly** — key reuse across contexts — and the fan-to-both is precisely how the client *sees* it ("why is this in both my group and my Alice thread?"). The **one-to-many attribution IS the compromise indicator**, surfaced as-is; the protocol **detects and reports** the collision, it does **not** resolve, dedup-to-one, or reject it. What the client does with it (flag "possibly compromised", warn, ignore) is client policy.
+A key normally lives in **exactly one** context (a fresh persona per relationship — per-relationship isolation, `design-doc-v1.md` §4.3). So a message normally fans to exactly one view. A key matching **more than one** context is the **anomaly** — key reuse across contexts — and the fan-to-both is precisely how the client *sees* it ("why is this in both my group and my Alice thread?"). The **one-to-many attribution IS the compromise indicator**, surfaced as-is; the protocol **detects and reports** the collision, it does **not** resolve, dedup-to-one, or reject it. What the client does with it (flag "possibly compromised", warn, ignore) is client policy.
 
 ---
 
@@ -86,7 +86,7 @@ A key normally lives in **exactly one** context (a fresh persona per relationshi
 
 - **No removal primitive.** Membership is append-only and forward-only: once added, a member is in the group for as long as it exists.
 - **Fork** for exclusion: to continue without X, a member issues a **new `create`** (a new genesis, new group ID, new context, new group-scoped personas) that **records the parent group's ID as lineage**. Consistent with the emergent model (a group is not an object to edit); maps to real behaviour ("the chat without X"). G′ mints its own personas, so it is not linkable to G except by its own members.
-- **Mute** is a **local** client filter: decline to *surface* a member's messages. **[Hard boundary — mute ≠ removal]** X retains access, others still fan out to X, X still sees the group. Never fuse mute into removal (same discipline as store-vs-display §9.6, origin-is-client §6). If someone genuinely needs X gone, that is a **fork**, not a mute.
+- **Mute** is a **local** client filter: decline to *surface* a member's messages. **[Hard boundary — mute ≠ removal]** X retains access, others still fan out to X, X still sees the group. Never fuse mute into removal (same discipline as store-vs-display `design-doc-v1.md` §9.6, origin-is-client §6). If someone genuinely needs X gone, that is a **fork**, not a mute.
 
 ---
 
@@ -94,7 +94,7 @@ A key normally lives in **exactly one** context (a fresh persona per relationshi
 
 1. **A member can reshare keys.** Nothing stops a member from forwarding the group's keys (or messages) to an outsider to let them listen. Unavoidable in a local-first design — you cannot stop someone from sharing what they can already read. The introduction gate authenticates *who* introduced whom; it does **not** prevent resharing.
 2. **No forced removal** (§8): append-only membership; recourse is fork or mute. Weaker than server-mediated groups; the honest local-first answer (you cannot compel another member's client).
-3. **No-arbiter at the addressing layer** (§9.3): keyring views may differ; two members can address different sets; convergence only over the shared event history.
+3. **No-arbiter at the addressing layer:** keyring views may differ; two members can address different sets; convergence only over the shared event history.
 4. **In-group correlation is unavoidable:** members necessarily learn they share a group (one persona per group message, and fan-out copies converge to a single node; per-recipient isolation *within* a group is not available, only *across* contexts).
 5. **Key reuse is detectable, not preventable** (§7): the protocol surfaces a key in multiple contexts; it cannot stop a peer from reusing one.
 
@@ -111,7 +111,7 @@ A key normally lives in **exactly one** context (a fresh persona per relationshi
 
 - **Group-persona key rotation / supersession** under append-only (how a member rotates a group key without a `remove`). Genuinely hard; not needed for a first working layer.
 - **Membership-event schema specifics** beyond the model above — deferred.
-- **Retrieval-privacy / transport interaction** (a group over a shared board) — transport is itself a deferred epoch (§10.1, §8.x).
+- **Retrieval-privacy / transport interaction** (a group over a shared board) — transport is itself a deferred epoch (`design-doc-v1.md` §10.1, §8.x).
 
 ---
 
