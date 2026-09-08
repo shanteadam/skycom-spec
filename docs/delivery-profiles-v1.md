@@ -138,9 +138,10 @@ specifies the following. (Per-actor threat tables in §7.)
 
 ### 4.1 `sealed` — registry entry `0` (the default)
 
-Today's construction: the media-typed payload is sealed to the recipient (`design-doc-v1.md` §5.3 single-recipient
-seal). Properties: **content confidentiality + authenticity + per-relationship unlinkability**. No
-change from `design-doc-v1` except that the `profile=0` code is now explicit in the covered header.
+The `sealed` profile's construction: the media-typed payload is sealed to the recipient
+(`design-doc-v1.md` §5.3 single-recipient seal). Properties: **content confidentiality +
+authenticity + per-relationship unlinkability**. No change from `design-doc-v1` except that the
+`profile=0` code is now explicit in the covered header.
 
 ### 4.2 `plaintext-signed` — authenticity without confidentiality
 
@@ -443,10 +444,10 @@ encrypted video cannot be single-AEAD-sealed or verified without buffering the w
   - **#4 identity** — is a large payload's message-id the hash of the whole thing (a full pass) or a
     **root hash of the chunk tree**? (Chunk-tree root enables streaming verification + partial
     integrity; changes how #4 is computed for these messages.)
-  - **`content_length` reopens** — reassembly deferred the `content_length` **streaming** optimization as
-    "presumes a chunked seal we don't have." With a chunked seal we *do* have it, so streaming
-    reassembly (decrypt chunk 0 → learn extent → know how many chunks) becomes real. Revisit that
-    reassembly deferral.
+  - **`content_length` reopens** — reassembly deferred the `content_length` **streaming**
+    optimization because it presumes a chunked seal, which the single-AEAD construction does not
+    provide. A chunked seal supplies one, making streaming reassembly (decrypt chunk 0 → learn
+    extent → know how many chunks) available. Revisit that reassembly deferral.
   - **Receive pipeline** — the receive path assumes reassemble→whole-envelope→apply; a streamed payload may apply
     progressively and must never require full buffering. The RAM assumption gets fixed here.
   - **Framing composes unchanged** — a chunked-sealed payload is still fragmented/encoded by the
