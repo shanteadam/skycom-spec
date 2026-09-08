@@ -1,6 +1,6 @@
 # Group Membership & Addressing — v1
 
-**Status.** Normative. The model is settled. Membership events are ordinary causal-DAG messages, so they compose with the ordering layer (`design-doc-v1.md` §9/§10) and require **no change to the receive path**. Membership is defined **above** the messaging core, and the wire carries **no group API**. *Reference convention: a bare `§N` is a section of **this document**; a reference to a section of another document names that document explicitly.*
+**Status.** Normative. Membership events are ordinary causal-DAG messages, so they compose with the ordering layer (`design-doc-v1.md` §9/§10) and require **no change to the receive path**. Membership is defined **above** the messaging core, and the wire carries **no group API**. *Reference convention: a bare `§N` is a section of **this document**; a reference to a section of another document names that document explicitly.*
 
 ---
 
@@ -122,4 +122,4 @@ A key normally lives in **exactly one** context (a fresh persona per relationshi
 
 ---
 
-*The model here is settled; it docks above the messaging core, composing with the ordering layer.*
+*Membership docks above the messaging core, composing with the ordering layer.*

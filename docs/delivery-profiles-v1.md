@@ -90,10 +90,10 @@ sealed-covered) portion** of the envelope. Consequences:
 > the covered header changes the envelope hash (#4) of every sealed message, and therefore every
 > frozen vector that pins one (`KV-ENV`, `KV-ENV-HASH`, `KV-WIRE`, `KV-SEAL`, and transitively
 > `KV-FRAG-01` and any DAG/dedup/membership vector embedding an envelope hash). This is a
-> **one-time re-freeze of our own conformance vectors, done pre-ship** — the correct time to make a
-> breaking wire change (there are no deployed messages; the "corpus" is our own scaffolding). Every
-> regenerated vector must be produced **by the implementation** (never hand-edited), and the
-> vector-integrity gate must confirm each is still referenced.
+> **format-version change**: an implementation carrying frozen sealed-message vectors from a prior
+> format version MUST re-freeze them **once**, against this version. Every regenerated vector must
+> be produced **by the implementation** (never hand-edited), and the vector-integrity gate must
+> confirm each is still referenced.
 
 ### 3.2 Registry & extensibility  `[CONFORMANCE-REQUIRED]`
 
@@ -407,8 +407,10 @@ iMessage plugin does.)
 - **#3 / `design-doc-v1.md` §3.2–3.3 (exterior fields).** The `encoding` identifier and decoy are exterior,
   unauthenticated, adapter-conditional fields — each must pass the exterior three-tests
   (readable-by-transport OK, non-authoritative, safe-before-verify), which they do (security-neutral).
-- **One-time vector re-freeze** of all sealed-message vectors (this document's §3.1, the profile field) — pre-ship, mechanical but
-  load-bearing (regenerate by implementation; keep the vector-integrity gate green).
+- **Sealed-message vector re-freeze** (this document's §3.1, the profile field). The added covered
+  field makes this a **format-version change**: an implementation holding frozen sealed-message
+  vectors from a prior version re-freezes them once. Mechanical but load-bearing — regenerate by
+  implementation; keep the vector-integrity gate green.
 
 ## 11. Open items & deferred tracks
 
@@ -420,8 +422,7 @@ iMessage plugin does.)
    Pin when the profile is implemented.
 3. **Interaction with membership/group send** — a group send is already one signed envelope
    fanned to N recipients; with one-message-one-profile (§3.3), a mixed-audience group is N
-   separate sends per distinct profile. Confirm no additional construction is needed. (Believed clean;
-   flagged for the implementing track.)
+   separate sends per distinct profile. Confirm no additional construction is needed.
 
 ### 11.2 `[DEFERRED TRACK]` Streaming seal / large payloads — the "B" track
 
