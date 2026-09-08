@@ -404,7 +404,7 @@ iMessage plugin does.)
 - **#3 / `design-doc-v1.md` §3.2–3.3 (exterior fields).** The `encoding` identifier and decoy are exterior,
   unauthenticated, adapter-conditional fields — each must pass the exterior three-tests
   (readable-by-transport OK, non-authoritative, safe-before-verify), which they do (security-neutral).
-- **One-time vector re-freeze** of all sealed-message vectors (§3.1) — pre-ship, mechanical but
+- **One-time vector re-freeze** of all sealed-message vectors (this document's §3.1, the profile field) — pre-ship, mechanical but
   load-bearing (regenerate by implementation; keep the vector-integrity gate green).
 
 ## 11. Open items & deferred tracks
