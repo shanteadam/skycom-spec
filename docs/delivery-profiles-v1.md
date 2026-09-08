@@ -12,7 +12,7 @@ document**; a reference to a section of another document names that document exp
 
 ---
 
-## 1. Purpose & the boundary this note draws
+## 1. Purpose & the boundary this document draws
 
 A skycom client may be someone's **only** communication client — carrying skycom-encrypted traffic
 alongside ordinary email/SMS/chat, over transports with wildly different constraints (a ToS that
@@ -20,7 +20,7 @@ flags opaque bodies; an aunt who only uses iMessage; a photo board that accepts 
 serve that, the protocol must let a **transport plugin choose how a message is delivered** without
 letting the plugin **define what security a message has**.
 
-That is the boundary, and it is the spine of this note:
+That is the boundary, and it is the spine of this document:
 
 > **[PROTOCOL-ENFORCED] The protocol specifies *constructions* and their *properties*; plugins
 > *compose* from that menu and decide *execution, transport, and UI*. A plugin never *invents* a
@@ -39,7 +39,7 @@ The line is drawn at **who touches the bytes** — and it is enforced cryptograp
 
 `design-doc-v1`'s own principles already point here: its §8.4 ("send policy is client config; the
 core stays policy-free") and its §3.2 ("out-of-envelope fields are adapter-conditional — the
-adapter, which knows its transport's leakage, decides"). This note generalizes them into a
+adapter, which knows its transport's leakage, decides"). This document generalizes them into a
 security model.
 
 ---
@@ -311,9 +311,9 @@ Same move both times: skycom attests; it does not surrender secrets across the b
 
 A WebRTC (or equivalent) calling **plugin** provides the entire media plane — SDP, ICE/STUN/TURN,
 DTLS-SRTP, jitter buffering, codecs. This is **transport-side**, exactly like any other adapter, and
-it is **not** a core track. The question this note answers is only: *does core provide the pieces the
-plugin needs to make the call end-to-end-authenticated by contact keys?* **It does, with no new core
-surface**, via the following construction:
+it is **not** a core track. The question this document answers is only: *does core provide the
+pieces the plugin needs to make the call end-to-end-authenticated by contact keys?* **It does, with
+no new core surface**, via the following construction:
 
 1. **Signaling is `sealed` messages.** The plugin sends its SDP offer/answer — **including the DTLS
    fingerprint** and SRTP parameters — to the contact as an ordinary `sealed`, signed message (a
@@ -382,7 +382,7 @@ core-involved construction taking a carrier as input. **Deferred to a future tra
 is a **registered construction** with its own threat table — never a plugin bolting bytes onto a
 carrier however it likes.
 
-**Principle (the spine of this note, restated):** *the core produces **security**; the transport
+**Principle (the spine of this document, restated):** *the core produces **security**; the transport
 layer produces **plausibility** — and they re-couple **only** when plausibility requires binding to
 the ciphertext (steganography), the sole cover technique that crosses back into the core.*
 
@@ -471,5 +471,5 @@ word with and almost no architecture.
 
 The transport **adapter contract** itself (sizes, availability, rate/cadence, `send`/`inbound`), the
 **send-path assembly** (the `design-doc-v1.md` §8.1 resolution chain), and the **key-ID prune hint**
-(`design-doc-v1.md` §6.3) — those belong to the **transport-adapter layer**, which composes this note's
-profile and framing definitions.
+(`design-doc-v1.md` §6.3) — those belong to the **transport-adapter layer**, which composes this
+document's profile and framing definitions.
