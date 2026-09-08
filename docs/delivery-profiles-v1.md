@@ -1,12 +1,14 @@
 # Delivery Profiles & Transport Framing — v1
 
 *Companion to `design-doc-v1.md`. This document introduces a security axis the base spec does not
-contemplate: `design-doc-v1` assumes **sealed-everything** (§3–§8 have no plaintext-content mode;
-§3.2's "as private as its transport allows" concerns **metadata** leakage of sealed traffic, not
-**content** plaintext). Graduated content-confidentiality is new protocol surface, specified here.*
+contemplate: `design-doc-v1` assumes **sealed-everything** (its §3–§8 have no plaintext-content
+mode; its §3.2's "as private as its transport allows" concerns **metadata** leakage of sealed
+traffic, not **content** plaintext). Graduated content-confidentiality is new protocol surface,
+specified here.*
 
 *Status: normative. Uses `[PROTOCOL-ENFORCED]` / `[CONFORMANCE-REQUIRED]` tags. Invariant
-references (`#N`) are to `design-doc-v1.md` §15.*
+references (`#N`) are to `design-doc-v1.md` §15. A bare `§N` section reference is to **this
+document**; a reference to a section of another document names that document explicitly.*
 
 ---
 
@@ -35,9 +37,10 @@ The line is drawn at **who touches the bytes** — and it is enforced cryptograp
   read a sealed body no matter what it does to the ciphertext. Confidentiality rests on **key
   custody**, not plugin trust.
 
-`design-doc-v1`'s own principles already point here: §8.4 ("send policy is client config; the core
-stays policy-free") and §3.2 ("out-of-envelope fields are adapter-conditional — the adapter, which
-knows its transport's leakage, decides"). This note generalizes them into a security model.
+`design-doc-v1`'s own principles already point here: its §8.4 ("send policy is client config; the
+core stays policy-free") and its §3.2 ("out-of-envelope fields are adapter-conditional — the
+adapter, which knows its transport's leakage, decides"). This note generalizes them into a
+security model.
 
 ---
 
@@ -194,7 +197,7 @@ requires binding to the ciphertext (§9).
 
 ### 5.1 Fragmentation
 
-Specified in `design-doc-v1` §8.6. Splits the sealed wire-unit bytes into transport-sized fragments;
+Specified in `design-doc-v1.md` §8.6. Splits the sealed wire-unit bytes into transport-sized fragments;
 crypto-blind; index-only headers (#15); reassembles to byte-identical envelope bytes. Framing par
 excellence — the archetype this layer generalizes.
 

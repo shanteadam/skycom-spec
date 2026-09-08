@@ -1,6 +1,6 @@
 # Group Membership & Addressing — v1
 
-**Status.** Normative. The model is settled. Membership events are ordinary causal-DAG messages, so they compose with the ordering layer (`design-doc-v1.md` §9/§10) and require **no change to the receive path**. Membership is defined **above** the messaging core, and the wire carries **no group API**.
+**Status.** Normative. The model is settled. Membership events are ordinary causal-DAG messages, so they compose with the ordering layer (`design-doc-v1.md` §9/§10) and require **no change to the receive path**. Membership is defined **above** the messaging core, and the wire carries **no group API**. *Reference convention: a bare `§N` is a section of **this document**; a reference to a section of another document names that document explicitly.*
 
 ---
 
@@ -94,7 +94,7 @@ A key normally lives in **exactly one** context (a fresh persona per relationshi
 
 1. **A member can reshare keys.** Nothing stops a member from forwarding the group's keys (or messages) to an outsider to let them listen. Unavoidable in a local-first design — you cannot stop someone from sharing what they can already read. The introduction gate authenticates *who* introduced whom; it does **not** prevent resharing.
 2. **No forced removal** (§8): append-only membership; recourse is fork or mute. Weaker than server-mediated groups; the honest local-first answer (you cannot compel another member's client).
-3. **No-arbiter at the addressing layer:** keyring views may differ; two members can address different sets; convergence only over the shared event history.
+3. **No-arbiter at the addressing layer** (`design-doc-v1.md` §9.3): keyring views may differ; two members can address different sets; convergence only over the shared event history.
 4. **In-group correlation is unavoidable:** members necessarily learn they share a group (one persona per group message, and fan-out copies converge to a single node; per-recipient isolation *within* a group is not available, only *across* contexts).
 5. **Key reuse is detectable, not preventable** (§7): the protocol surfaces a key in multiple contexts; it cannot stop a peer from reusing one.
 
