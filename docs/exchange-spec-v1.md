@@ -2,7 +2,7 @@
 
 **Relationship to the messaging protocol.** This is a **separate specification** from the core messaging design (`design-doc-v1.md`), on its own timeline. The two meet at exactly one place: the **keystore contract** (messaging doc §7). Key exchange's only job is to *produce valid keystore entries*; the messaging protocol *reads* those entries and is entirely unaware of how they were established. A bundle could be handed over by QR, by referral, or by emailing it to someone — the messaging layer cannot tell the difference, because by the time it sees anything, the key is already a resolved keystore entry.
 
-**What is normative here.** Only the **contact-bundle format**, **proof-of-possession**, the **exchange-plugin interface**, and the **local-confidence security rule** are normative. Method, ceremony, handshake, and confidence vocabulary are pluggable. This document uses the same **[PROTOCOL-ENFORCED] / [CONFORMANCE-REQUIRED]** discipline as the messaging spec.
+**What is normative here.** Only the **contact-bundle format**, **proof-of-possession**, the **exchange-plugin interface**, and the **local-provenance security rule** are normative. Method, ceremony, handshake, and origin vocabulary are pluggable. This document uses the same **[PROTOCOL-ENFORCED] / [CONFORMANCE-REQUIRED]** discipline as the messaging spec.
 
 **Scope of v1.** v1 exchange is **out-of-band bundle delivery only** (QR / paste / link) — a *symmetric* exchange with **no interactive handshake**. Referral and rendezvous (interactive) are deferred to later reference-plugin versions and later named exchange-protocol specs (§5). Because v1 has no handshake, v1 needs no interactive exchange-protocol spec — the bundle format is the whole wire story.
 
@@ -49,14 +49,14 @@ The *interface* is required; the plugins behind it are not. **The interface belo
 
 1. **Request new local keys** for an exchange — mint a fresh per-relationship keypair set (Ed25519 + X25519) to be offered.
 2. **Ingest a remote bundle** — verify version + PoP — and **write the resulting contact key set** as a keystore entry (messaging doc §7).
-3. **Provide optional exchange metadata** — a locally-computed confidence/security level and info (§6).
-4. Surface, at the plugin's discretion, whether the counterpart's exchanger is compatible or lacking. Detectable compatibility is limited to what's in the bundle (version always; self-asserted method / expiry as *claims* only). Bundle-level compatibility is guaranteed by §2; method / confidence adequacy is the plugin's judgment, not the spec's.
+3. **Record provenance** — an **opaque, client-set `origin`**: what the receiving client observed about how the key was obtained, written to the keystore entry alongside the key (§6). The protocol assigns it no meaning and no behaviour depends on it.
+4. Surface, at the plugin's discretion, whether the counterpart's exchanger is compatible or lacking. Detectable compatibility is limited to what's in the bundle (version always; self-asserted method / expiry as *claims* only). Bundle-level compatibility is guaranteed by §2; method / origin adequacy is the plugin's judgment, not the spec's.
 
 ---
 
-## 5. Method, handshake & confidence vocabulary — [NOT REQUIRED / pluggable]
+## 5. Method, handshake & origin vocabulary — [NOT REQUIRED / pluggable]
 
-The exchange **method** (QR, paste, link, NFC, rendezvous, …) and the **confidence/security vocabulary** are outside the normative core. A **canonical reference set** of exchange plugins and a **reference confidence/security enumeration** ship as defaults; other clients MAY ignore this metadata or substitute plugins that define security criteria / labels differently.
+The exchange **method** (QR, paste, link, NFC, rendezvous, …) and the **origin vocabulary** — the strings a client writes to record how a key was obtained — are outside the normative core. A **canonical reference set** of exchange plugins and a **reference origin vocabulary** ship as defaults; other clients MAY ignore this metadata or substitute plugins that spell their origins differently. Because the origin is opaque to the protocol, an unrecognized origin value is not an error: it is data the receiving client interprets, or does not.
 
 **Tiered structure for interactive exchanges (forward-looking).** Symmetric / out-of-band methods (QR-in-person, paste, NFC) have **no conversation** — two parties each produce a bundle and hand it over; the bundle format is sufficient and nothing further need be specified. *Interactive* methods (rendezvous, invite-then-response, referral) involve a back-and-forth that two *different* clients must agree on to interoperate. Such a handshake is specified as a **named, versioned exchange-protocol spec** (e.g. "Referral v1", "Rendezvous v1") — separate from both the messaging core and any single plugin. A plugin *conforms to* a named exchange protocol rather than inventing one; two clients interoperate on an interactive exchange iff they implement the same named protocol. **v1 defines no interactive exchange protocol** (out-of-band only).
 
@@ -64,9 +64,13 @@ The exchange **method** (QR, paste, link, NFC, rendezvous, …) and the **confid
 
 ---
 
-## 6. Confidence is local, never trusted from the peer — [SECURITY RULE, all plugins]
+## 6. Provenance is recorded locally, never taken from the peer — [SECURITY RULE, all plugins]
 
-Confidence/security **labels are computed and stored by the *receiving* client** from how *it* obtained and verified the bundle — **never** a value transmitted and trusted from the other party. Self-asserted *facts* (PoP, expiry, claimed method) MAY travel in the bundle and be *verified*; *judgments* (confidence level) MAY NOT be taken from the wire. Otherwise a malicious sender marks a MITM'd key "verified / high confidence" and a trusting client renders an attacker's key as a green checkmark. This rule binds every plugin, reference or third-party. [CONFORMANCE-REQUIRED]
+The exchange layer **records an `origin`** with every key it writes to the keystore: an **opaque, client-set string** describing how *the receiving client* obtained and verified the bundle. The protocol **stores and surfaces it and assigns it no meaning** — no behaviour anywhere depends on its value (`design-doc-v1.md` §7.1).
+
+**The origin is written by the receiver, from its own observation, and is never taken from the wire.** [CONFORMANCE-REQUIRED] The bundle carries no origin field and a sender has no way to supply one: the origin records what *this* client did, which the sender is not in a position to attest. Otherwise a malicious sender marks a MITM'd key as obtained through a verified in-person exchange, and a client that surfaces origins to its user renders an attacker's key with whatever standing that origin carries there. This rule binds every plugin, reference or third-party.
+
+**Self-asserted facts are a separate matter.** The bundle's exchange-mechanics facts (expiry, claimed method hint, format version — §2) MAY travel and MUST be treated as *claims*: verifiable where a check exists (they are covered by PoP, §3), never as the receiver's own record. A claimed method hint is an input a client MAY consider when composing its origin; it is never the origin itself.
 
 ---
 
@@ -75,7 +79,7 @@ Confidence/security **labels are computed and stored by the *receiving* client**
 A **referral** unifies two operations into one object: an authenticated statement, signed by a key the recipient already trusts, vouching for another key.
 
 - **Structure:** a **§2 contact bundle counter-signed by an established contact** — i.e. "a bundle for C, endorsed by B." Ingested through the existing plugin interface (§4) as "a bundle that arrived vouched-for rather than out-of-band."
-- **Transitive introduction (A meets C through B):** A verified *B*, not C, and is now trusting B's judgment about C. A referral is an authenticated channel to establish C's key, **not** a guarantee the key is really C's — a malicious or lazy B can introduce A to an attacker-controlled "C" and MITM from birth. Per §6, A computes its **own** local confidence, **no higher than** min(A's confidence in B, B's claimed confidence in C), and marks the result a distinct, lower tier ("introduced, not directly verified").
+- **Transitive introduction (A meets C through B):** A verified *B*, not C, and is now trusting B's judgment about C. A referral is an authenticated channel to establish C's key, **not** a guarantee the key is really C's — a malicious or lazy B can introduce A to an attacker-controlled "C" and MITM from birth. Per §6, A writes its **own** origin recording what actually happened — that C's key arrived by referral, and which contact endorsed it — never an origin copied from B or asserted by the referral. The protocol neither ranks that origin against a directly-verified one nor derives one from the other; whether an introduced key is treated differently is client policy.
 - **Self-rotation is the degenerate case** (referrer == referred == self): "my new key is X, signed by my old key." This is how key migration — including **PQ / algorithm migration** — reaches established contacts in-band, without redoing the out-of-band ceremony. It is a **continuity mechanism, not a recovery one**: it works only while the old key is **uncompromised and available to sign**. A compromised key lets an attacker sign a referral to their own key (hijack); a lost key cannot sign at all. Either case falls back to fresh out-of-band exchange. This limit MUST be documented wherever self-rotation is offered.
 - **Interactive:** referral is mildly interactive, so shipping it means writing **"Referral v1"** as the first named exchange-protocol spec (§5). Deferred.
 
@@ -94,9 +98,9 @@ Exchange must not foreclose post-quantum migration (the near-certain future reas
 ---
 
 ## 9. v1 invariants (exchange)
-1. Only the contact-bundle format and the exchange-plugin interface are normative; method, handshake, and confidence vocabulary are pluggable.
+1. Only the contact-bundle format and the exchange-plugin interface are normative; method, handshake, and origin vocabulary are pluggable.
 2. Every bundle carries one Ed25519 self-signature (proof-of-possession) covering the whole bundle; a bundle failing PoP is rejected.
-3. Exchange confidence/security is computed locally by the receiver from how it obtained the bundle — never taken from a peer-supplied label. Self-asserted facts may be verified; confidence judgments may not be trusted from the wire.
+3. The `origin` recorded with a key is written locally by the receiver from how it obtained the bundle — never taken from a peer-supplied value; the bundle carries no origin field. It is opaque to the protocol, which assigns it no meaning and derives no behaviour from it. Self-asserted facts in the bundle may be verified as claims; they are never the receiver's record.
 4. Exchange produces keystore entries and nothing else; the messaging protocol has no awareness of exchange, and there are no exchange hooks in the messaging core.
 5. Interactive handshakes are named, versioned exchange-protocol specs a plugin conforms to — never invented per-plugin. v1 defines none (out-of-band only).
 6. Keys and signatures are algorithm-tagged and variable-length, so PQ/hybrid migration needs no format-breaking change.
