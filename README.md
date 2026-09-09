@@ -60,7 +60,9 @@ It is not a product and does not aim to be one. It performs no key exchange, no 
 
 ## Versioning
 
-Specification versions are tagged. Section numbers are stable **within** a tagged version; renumbering requires a version bump, so a citation of the form *design-doc §5.3.1 (v1.0)* stays valid.
+Specification versions are tagged, and section numbers are stable **within** a tagged version. Once a version is tagged, renumbering requires a version bump — so a citation that names its version, of the form *design-doc §5.3.1 (v1.0)*, stays valid against that tag. That is the form to cite in once a tag exists.
+
+**No version has been tagged yet.** Section numbers in the current text are therefore not yet stable and may move before the first tag; one section has already been renumbered during preparation, before anything external could depend on it. Until a tag exists there is no version to cite against, so cite the current text only provisionally.
 
 The reference implementation states which specification version it conforms to.
 
