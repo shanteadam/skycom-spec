@@ -1,8 +1,8 @@
 # Key Exchange Specification — v1
 
-**Relationship to the messaging protocol.** This is a **separate specification** from the core messaging design (`design-doc-v1.md`), on its own timeline. The two meet at exactly one place: the **keystore contract** (messaging doc §7). Key exchange's only job is to *produce valid keystore entries*; the messaging protocol *reads* those entries and is entirely unaware of how they were established. A bundle could be handed over by QR, by referral, or by emailing it to someone — the messaging layer cannot tell the difference, because by the time it sees anything, the key is already a resolved keystore entry.
+**Relationship to the messaging protocol.** This is a **separate specification** from the core messaging design (`design-doc-v1.md`), on its own timeline. The two meet at exactly one place: the **keystore contract** (`design-doc-v1.md` §7). Key exchange's only job is to *produce valid keystore entries*; the messaging protocol *reads* those entries and is entirely unaware of how they were established. A bundle could be handed over by QR, by referral, or by emailing it to someone — the messaging layer cannot tell the difference, because by the time it sees anything, the key is already a resolved keystore entry.
 
-**What is normative here.** Only the **contact-bundle format**, **proof-of-possession**, the **exchange-plugin interface**, and the **local-provenance security rule** are normative. Method, ceremony, handshake, and origin vocabulary are pluggable. This document uses the same **[PROTOCOL-ENFORCED] / [CONFORMANCE-REQUIRED]** discipline as the messaging spec.
+**What is normative here.** Only the **contact-bundle format**, **proof-of-possession**, the **exchange-plugin interface**, and the **local-provenance security rule** are normative. Method, ceremony, handshake, and origin vocabulary are pluggable. This document uses the same **[PROTOCOL-ENFORCED] / [CONFORMANCE-REQUIRED]** discipline as the messaging spec. *Reference convention: a bare `§N` is a section of **this document**; a reference to a section of another document names that document explicitly. This document has no subsections, so every `§N.M` is necessarily a reference to another document.*
 
 **Scope of v1.** v1 exchange is **out-of-band bundle delivery only** (QR / paste / link) — a *symmetric* exchange with **no interactive handshake**. Referral and rendezvous (interactive) are deferred to later reference-plugin versions and later named exchange-protocol specs (§5). Because v1 has no handshake, v1 needs no interactive exchange-protocol spec — the bundle format is the whole wire story.
 
@@ -10,7 +10,7 @@
 
 ## 1. Purpose & structural tension
 
-Establishing a relationship = each party ends up holding the other's per-relationship **Ed25519 (signing) + X25519 (encryption) public keys**, and giving the other theirs, producing a keystore entry on each side (messaging doc §7 / §5.2).
+Establishing a relationship = each party ends up holding the other's per-relationship **Ed25519 (signing) + X25519 (encryption) public keys**, and giving the other theirs, producing a keystore entry on each side (`design-doc-v1.md` §7 / §5.2).
 
 Every conventional key-exchange scheme assumes a stable, discoverable identifier (phone number, username, DID, directory entry). This design deliberately has none — a directory of one's keys is the exact correlation surface the per-relationship model destroys. So exchange must work *without* any global identifier, and the **man-in-the-middle at first contact** is the one attack the rest of the system does not inherently prevent (an attacker who swaps keys at exchange establishes two relationships and bridges them; everything still verifies). This spec's job is to guarantee **interoperable first contact** and to make honest verification *possible*, without blessing one ceremony.
 
@@ -48,7 +48,7 @@ The bundle MUST carry **one Ed25519 self-signature covering the entire bundle** 
 The *interface* is required; the plugins behind it are not. **The interface belongs to the exchange layer, not the messaging core** — the messaging protocol has no exchange hooks and never initiates an exchange. A plugin can:
 
 1. **Request new local keys** for an exchange — mint a fresh per-relationship keypair set (Ed25519 + X25519) to be offered.
-2. **Ingest a remote bundle** — verify version + PoP — and **write the resulting contact key set** as a keystore entry (messaging doc §7).
+2. **Ingest a remote bundle** — verify version + PoP — and **write the resulting contact key set** as a keystore entry (`design-doc-v1.md` §7).
 3. **Record provenance** — an **opaque, client-set `origin`**: what the receiving client observed about how the key was obtained, written to the keystore entry alongside the key (§6). The protocol assigns it no meaning and no behaviour depends on it.
 4. Surface, at the plugin's discretion, whether the counterpart's exchanger is compatible or lacking. Detectable compatibility is limited to what's in the bundle (version always; self-asserted method / expiry as *claims* only). Bundle-level compatibility is guaranteed by §2; method / origin adequacy is the plugin's judgment, not the spec's.
 

@@ -425,7 +425,7 @@ iMessage plugin does.)
    fanned to N recipients; with one-message-one-profile (§3.3), a mixed-audience group is N
    separate sends per distinct profile. Confirm no additional construction is needed.
 
-### 11.2 `[DEFERRED TRACK]` Streaming seal / large payloads — the "B" track
+### 11.2 `[DEFERRED TRACK]` Streaming seal / large payloads
 
 The base spec assumes a **single AEAD over the whole envelope** (`design-doc-v1.md` §5.3.1) and that **payloads fit in RAM**
 (the send path buffers the whole message; `fragment` takes the whole byte array; reassembly buffers
