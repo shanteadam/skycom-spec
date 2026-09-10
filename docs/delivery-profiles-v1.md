@@ -38,9 +38,9 @@ The line is drawn at **who touches the bytes** — and it is enforced cryptograp
   custody**, not plugin trust.
 
 `design-doc-v1`'s own principles already point here: its §8.4 ("send policy is client config; the
-core stays policy-free") and its §3.2 ("out-of-envelope fields are adapter-conditional — the
-adapter, which knows its transport's leakage, decides"). This document generalizes them into a
-security model.
+core stays policy-free") and its §3.2 ("out-of-envelope fields are request-conditional — included
+only where the transport already exposes the equivalent, judged by whoever requests the message").
+This document generalizes them into a security model.
 
 ---
 
@@ -406,8 +406,9 @@ iMessage plugin does.)
   `profile` is decided **before** sealing and lives **inside** the envelope. The two-layer split is a
   direct generalization of #16.
 - **#3 / `design-doc-v1.md` §3.2–3.3 (exterior fields).** The `encoding` identifier and decoy are exterior,
-  unauthenticated, adapter-conditional fields — each must pass the exterior three-tests
-  (readable-by-transport OK, non-authoritative, safe-before-verify), which they do (security-neutral).
+  unauthenticated, adapter-conditional fields — each must pass the exterior four-tests
+  (readable-by-transport OK, non-authoritative, safe-before-verify, no identifying structure), which
+  they do (security-neutral).
 - **Sealed-message vector re-freeze** (this document's §3.1, the profile field). The added covered
   field makes this a **format-version change**: an implementation holding frozen sealed-message
   vectors from a prior version re-freezes them once. Mechanical but load-bearing — regenerate by
