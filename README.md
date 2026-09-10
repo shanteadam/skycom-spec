@@ -42,9 +42,9 @@ Section 15 of the core specification lists the twenty-one invariants, each tagge
 
 ## Where to start
 
-**Evaluating the design, or reviewing it for weaknesses.** Read `design-doc-v1.md` §3 (what rides outside the seal, and the enforcement classification) and §15 (the invariants). The reference implementation's repository carries an architecture and security review guide written for exactly this purpose, including a threat model and a statement of where the evidence is weakest.
+**Evaluating the design, or reviewing it for weaknesses.** Read `design-doc-v1.md` §3 (what rides outside the seal, and the enforcement classification) and §15 (the invariants).
 
-**Building an independent implementation.** The specification is the contract; the reference implementation is one reading of it. Where they disagree, the specification governs. The conformance vectors — byte-level fixtures an implementation must reproduce — live with the reference implementation and are the practical test of whether your reading matches. **Note the licensing position in [`NOTICE.md`](NOTICE.md) before starting.**
+**Building an independent implementation.** The specification is the contract; the reference implementation is one reading of it. Where they disagree, the specification governs. The conformance vectors — byte-level fixtures an implementation must reproduce — exist, but live with the reference implementation and are **not published**. Until they are, an implementer can build from the specification but cannot check byte-level conformance against them. **Note the licensing position in [`NOTICE.md`](NOTICE.md) before starting.**
 
 **Using skycom.** There is nothing to use yet. The reference implementation is a library for testing the specification, not a product; there is no client and no production transport adapter.
 
@@ -52,7 +52,7 @@ Section 15 of the core specification lists the twenty-one invariants, each tagge
 
 ## The reference implementation
 
-[`skycom-core`](https://github.com/shanteadam/skycom-core) implements this specification for testing purposes: to demonstrate the specification is complete enough to build from, to pin the constructions with byte-level conformance vectors, and to give reviewers something concrete to attack.
+A reference implementation, `skycom-core`, implements this specification for testing purposes: to demonstrate the specification is complete enough to build from, to pin the constructions with byte-level conformance vectors, and to give reviewers something concrete to attack. **Its repository is not public**, so nothing in this section is something a reader can currently obtain.
 
 It is not a product and does not aim to be one. It performs no key exchange, no retrieval, and no user interaction — those are separate layers, some of which do not exist yet.
 
