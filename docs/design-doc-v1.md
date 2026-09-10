@@ -94,7 +94,7 @@ Everything a receiver cannot check at runtime (your key custody, whether you reu
 
 This is *why the precision work matters*: a tight spec with testable conformance profiles is **what makes certification possible.** The core defines conformance precisely; a certifier (trusted by the user) verifies an implementation against it; a user chooses a certified implementation; then the conformance-required properties hold for that user — not because the protocol enforces them at runtime, but because the implementation was **verified** to uphold them. (Companion to the core-vs-deployment boundary, §2.1: the core guarantees the envelope and the reachability of its maximum-security corner; certification is how a user gains confidence a given client actually sits where it claims.)
 
-Conformance is defined by this specification together with its frozen conformance vectors — the `KV-*` corpus an independent implementation must reproduce; an automated **conformance test suite** that *detects* violations is not part of v1. The honest claim: *we define conformance; we cannot compel third-party compliance.*
+Conformance is defined by this specification together with its frozen conformance vectors — the `KV-*` corpus an independent implementation must reproduce; an automated **conformance test suite** that *detects* violations is not part of v1. **The corpus is not publicly available.** The vectors exist and are named throughout this document where they pin a rule (`KV-CBOR-MAPORDER-01`, `KV-ENV-PARSET-01`, `KV-HINT-01`, and the rest), but while they remain unpublished those names are forward references, and the second half of this definition cannot be exercised by an independent implementer: the specification can be read and built from, while byte-level agreement cannot be checked against anything. **The certification chain above therefore cannot presently be closed end to end** — a certifier has the precise spec but no mechanical check to certify an implementation against. The honest claim: *we define conformance; we cannot compel third-party compliance.*
 
 ---
 
@@ -316,7 +316,7 @@ The envelope is the contract; a client is one implementation. Conformance is a s
 - **Participate** — ordering, gap detection, dedup, threading, groups. Needs the stateful Layer-1 logic, because a message decrypted in isolation has no position in the DAG.
 - **Reply** (the asymmetric one) — emitting a *valid* envelope requires signing, setting the causal-parent set, and encrypting. This wants the library, not hand-tools.
 
-Design consequence: the envelope spec (§6.1–6.4, §6.2 canonical serialization especially) must be precise enough that a third party could build an independent **reader** without our code. That precision is what makes this an open protocol rather than a closed app. `msgtool` is the reference reader and doubles as the conformance touchstone.
+Design consequence: the envelope spec (§6.1–6.4, §6.2 canonical serialization especially) must be precise enough that a third party could build an independent **reader** without our code. That precision is what makes this an open protocol rather than a closed app. A reference reader (`msgtool`) exists, but it is one implementation of this specification, not the measure of conformance — conformance is defined in §3.4, by the specification and the vector corpus, naming no tool.
 
 ### 6.6 Message acknowledgement (optional) `[OPTIONAL-FEATURE-CONFORMANCE]`
 
