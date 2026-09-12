@@ -1,6 +1,6 @@
 # Local-First Cryptographic Identity & Messaging — v1 Design Document
 
-**Scope of this document:** Layer 1 **messaging** only (local message/key/transport management, single device, open source). **Key exchange is specified separately** in `exchange-spec-v1.md` and meets this spec only at the keystore contract (§7). Layers 2–4 are described only where they constrain Layer 1's interfaces. This document defines *what* v1 must be.
+**Scope of this document:** Layer 1 **messaging** only (local message/key/transport management, single device, open source). **Key exchange is specified separately** in `exchange-spec-v1.md` and meets this spec only at the keystore contract (§7). Two further companion specifications build on this one and are normative where they apply: `delivery-profiles-v1.md` (delivery profiles and transport framing) and `membership-design-v1.md` (group membership and addressing, §4.5). Layers 2–4 are described only where they constrain Layer 1's interfaces. This document defines *what* v1 must be.
 
 **Reference convention:** a bare `§N` is a section of **this document**; a reference to a section of another document names that document explicitly.
 
@@ -161,10 +161,13 @@ Contains:
 - **Their per-relationship public keys** — Ed25519 + X25519, as they presented them.
 - **Contact metadata** — transport-*independent* facts the user sets locally (the name the user gave them, notes). Phone-number-exchange model: this is the user's private labelling, invisible to the contact.
 - **Transport bindings** — collection (§4.8).
-- **Sub-contacts** — present only when this contact is a **group** (§4.5).
 
 ### 4.5 Group
-A group is a **contact that has sub-contacts** (members). Each member presented per-relationship public keys **specific to this group**, and the user presents per-relationship keys specific to this group. Group keys are always fresh — never reused from any direct-contact relationship — to preserve the isolation model.
+A group is **its own relationship context** — a **sibling** to a contact entry, not a contact that contains other contacts. Where a contact entry holds one party's keys, a group record holds a **keyring**: an append-only map from each member's group-scoped **signing** public key to that member's group **encryption** key and that key's `origin` (§7.1), together with the group's **ID** and an optional **local** group name (self-facing, never on the wire). Same structure, different cardinality — one member's keys or N.
+
+Every key in a group is **group-scoped**: each member presented per-relationship public keys **specific to this group**, and the user presents per-relationship keys specific to this group. Group keys are always fresh — never reused from any direct-contact relationship — to preserve the isolation model.
+
+The keyring is **derived, not authoritative**: it is this device's local fold over the membership events it has seen, not a shared object. Group identity, the membership events, and the fold are specified in `membership-design-v1.md` (§2–§5).
 
 ### 4.6 Metadata homes (canonical resolution of "where does an address live")
 Three distinct homes, do not conflate:
@@ -468,7 +471,7 @@ Every stored key is **algorithm-tagged and treated as variable-length** — neve
 Sending to multiple recipients (i.e. a group) is **not a special construct**. The sender produces **one signed envelope** and encrypts *that same signed byte-sequence* separately to each recipient — **one signed payload, N encryptions**, each with its own per-message ephemeral key (§5.3), sent as N independent transmissions.
 
 - **The envelope hash is identical across all recipients** (they share the same signed bytes), so every recipient agrees on the message ID and the **causal DAG converges** — one coherent group thread, not N disjoint ones. [PROTOCOL-ENFORCED by content-addressing] Sealing each recipient independently into *different* signed bytes would fork the DAG per recipient; do not.
-- **A group is emergent:** "hold N recipients' public keys" + this fan-out + the causal-parent *set* (§9.1) is the entire group mechanism. There is **no group envelope, no shared group key, no group-specific protocol surface** in v1. Membership *is* the keyset the sender holds; how that keyset is managed (enterprise/authority/family models, LDAP sync, etc.) lives in the exchange layer and upper layers, never in the messaging core.
+- **A group is emergent:** "hold N recipients' public keys" + this fan-out + the causal-parent *set* (§9.1) is the entire group mechanism. There is **no group envelope, no shared group key, no group-specific protocol surface** in v1. Membership *is* the keyring the sender holds; how that keyring is assembled is specified in `membership-design-v1.md` — `create` and `add` **membership events carried as ordinary DAG messages** (§3 there), folded locally into the group's keyring. That sits **above** the messaging core and is **distinct from key exchange** (§7): the core carries those events exactly as it carries any other message, and exposes no membership API.
 
 ### 8.3 Availability interface
 Availability is **runtime and device-local** — a function of current device state (WiFi, cellular, p2p reachability), **not** a stored property. Core library defines an **availability interface per transport type**; each transport implements it.
@@ -509,6 +512,8 @@ A **transport framing layer** sits between the whole envelope (§6) and a transp
 Every message carries a **set** of causal parents = **the latest message seen from each participant, including the sender's own last message.** In 1:1 this is typically two hashes; in a group, up to N. It is a **set**, not a single hash — this is what makes concurrency explicit and makes groups fall out for free.
 
 Carries: ordering, bidirectional gap detection, "what had I seen when I wrote this", and group merge.
+
+**Group messages in the DAG.** A group message is one signed envelope fanned out to N recipients (§8.2). All recipients hold the *same signed bytes*, so the envelope hash is identical and the message converges on **one DAG node**, never N. The causal-parent set spans participants rather than pairs, so group concurrency and merge fall out of the set semantics with no additional machinery. And because the wire carries **no group identifier**, which context a node belongs to is not a property of the message at all: it is a receive-side read over the keyrings (`membership-design-v1.md` §7).
 
 ### 9.2 Reply-to (user-set, optional)
 A separate optional field naming the one message this is *semantically* answering. Threading/display only. Kept distinct from causal parents so that replying to an old message never disables gap detection and a crossing (concurrent) message is never mis-rendered as a reply.
