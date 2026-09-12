@@ -37,7 +37,7 @@ This boundary is what gives the enforcement classification (§3.4) its force, an
 - Gap detection over lossy, out-of-order transports.
 - Transport-agnostic delivery: the same message may be sent over one, some, or all available transports and de-duplicated on receipt.
 - Groups as first-class relationship contexts with their own fresh keys.
-- **Open, independently-implementable envelope format.** The *protocol* is the contract, not any client. Any conformant implementation holding the relationship key can read a message; `msgtool` is the reference minimal reader. Clients are interchangeable by design (see §6.5).
+- **Open, independently-implementable envelope format.** The *protocol* is the contract, not any client. Any conformant implementation holding the relationship key can read a message. Clients are interchangeable by design (see §6.5).
 
 ### Non-goals (v1) — explicit, so they are not silently assumed
 - **Forward secrecy / ratcheting / self-healing.** Keys are stable per relationship. Deferred.
@@ -333,7 +333,7 @@ A sender **MAY** include a version in the exterior frame as a **routing hint** t
 ### 6.5 Conformance levels — protocol vs. client
 The envelope is the contract; a client is one implementation. Conformance is a spectrum, because a single ciphertext carries *the message* but not *the conversation* — conversation state (per-participant DAG heads, hold-and-wait buffer) lives in the Layer-1 store (§9, §12), not in any envelope.
 
-- **Read** — decrypt one message. Needs only the envelope format + the relationship key + the key-ID hint (§6.3). A CLI (`msgtool`) or even an independent hand-tool in any language can do this. This is the minimal bar an independent implementer must be able to hit from the spec alone.
+- **Read** — decrypt one message. Needs only the envelope format + the relationship key + the key-ID hint (§6.3). A CLI, or even an independent hand-tool in any language, can do this. This is the minimal bar an independent implementer must be able to hit from the spec alone.
 - **Participate** — ordering, gap detection, dedup, threading, groups. Needs the stateful Layer-1 logic, because a message decrypted in isolation has no position in the DAG.
 - **Reply** (the asymmetric one) — emitting a *valid* envelope requires signing, setting the causal-parent set, and encrypting. This wants the library, not hand-tools.
 
