@@ -294,7 +294,6 @@ Signed (Ed25519, per-relationship) and encrypted (§5.3 ephemeral ECDH → AEAD)
 - `reply_to` — optional envelope hash (§9.2).
 - `timestamp` — sender's asserted send time (advisory only; not used for ordering). **Integer milliseconds. No floats anywhere in the signed portion** (IEEE-754 serialization differs across languages). [CONFORMANCE-REQUIRED]
 - `sender_persona` — which per-relationship identity sent this.
-- `content_length` — an **encrypted inner length/extent prefix** enabling fragment reassembly to know the expected size *after* decrypting the first assembled chunk, invisibly to the transport (§8.6).
 
 **All protocol metadata is inside the signed, encrypted envelope. There is no cleartext protocol metadata** beyond the always-present ephemeral public (§5.3), an *optional* non-authoritative version hint (§6.3.1), optional fragment metadata (§8.6), and the optional key-ID hint (§6.3) — each governed by §3.3. The AEAD `aad` is empty (§5.3.1): nothing outside the seal requires separate authentication.
 
@@ -487,7 +486,7 @@ A **transport framing layer** sits between the whole envelope (§6) and a transp
 
 **The envelope is never fragmented before sealing.** It is produced whole, then this layer splits the *serialized sealed bytes* into transport-sized fragments for a specific pipe, and reassembles them **before** anything touches the envelope. Fragmentation is thus per-transport and asymmetric: the same envelope goes whole over email and in parts over SMS, with an **identical envelope hash** either way — so §11.1 hash-dedup collapses "arrived whole" and "arrived in N parts" for free. Transports that don't need it don't fragment.
 
-**Completeness is defined by envelope verification, not by any wire marker.** [PROTOCOL-ENFORCED] Assemble fragments in index order; when the running bytes decrypt/verify as a well-formed signed envelope, the message is complete. The encrypted inner `content_length` (§6.1) tells the recipient the expected extent *after* decrypting, so it need not attempt a full verify on every fragment. There is **no plaintext total and no terminator flag** — those would re-leak message size/shape.
+**Completeness is defined by envelope verification, not by any wire marker.** [PROTOCOL-ENFORCED] Assemble fragments in index order; when the running bytes decrypt/verify as a well-formed signed envelope, the message is complete. There is **no plaintext total and no terminator flag** — those would re-leak message size/shape.
 
 **Fragment header (unauthenticated by design — the reassembled envelope is what's signed):**
 - **Per-fragment index** (position). Required, so reassembly is linear-with-backtracking rather than O(N!). Index reveals *position*, never *count*.
