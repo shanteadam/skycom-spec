@@ -298,7 +298,7 @@ Recipient identification is by trial decryption (§5.3); a hint is **never requi
 #### 6.3.1 Version hint — optional, non-authoritative
 Version discovery is **trial-based by default**: a recipient attempts its supported format versions until one parses/derives/verifies. [CONFORMANCE-REQUIRED] In steady state (one supported version) there is no trial cost; trial occurs only during multi-version coexistence.
 
-A sender **MAY** include a version in the exterior frame as a **routing hint** to save the recipient the trial (e.g. on transports where wire silence is not a concern, or to spare a known recipient the work). It is *adapter/sender-conditional* like every other exterior field (§3.2) and SHOULD be omitted where a protocol fingerprint would harm anonymity (e.g. an anonymous board). When present:
+A sender **MAY** include a version in the exterior frame as a **routing hint** to save the recipient the trial (e.g. on transports where wire silence is not a concern, or to spare a known recipient the work). It is *request-conditional* — the requestor decides per message, as for the key-ID hint (§3.2, §6.3) — and SHOULD be omitted where a protocol fingerprint would harm anonymity (e.g. an anonymous board). When present:
 - The recipient MAY try that version **first**.
 - If it fails **or is unrecognized**, the recipient **MUST fall back** to trial across supported versions, exactly as if no hint were present. [CONFORMANCE-REQUIRED]
 - The recipient **MUST NOT** reject a message solely because the exterior hint is absent, unrecognized, or wrong.
