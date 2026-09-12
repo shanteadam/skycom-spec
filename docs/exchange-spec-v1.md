@@ -31,7 +31,7 @@ A canonical, **versioned** serialization of an offer of per-relationship keys, w
 
 The bundle format is required; the *method* that transports it and the *labels* interpreting it are not.
 
-*Open item:* the concrete **wire encoding / version tagging** of the bundle and its PoP signature — pin in the key-exchange implementation story. (Shape decided per §2–§3; only the byte encoding remains. Reusing the messaging spec's deterministic-CBOR/COSE choice is the natural default so implementations share one serializer.)
+*Open item:* the concrete **wire encoding / version tagging** of the bundle and its PoP signature — to be pinned before the bundle format is fixed. (Shape decided per §2–§3; only the byte encoding remains. Reusing the messaging spec's deterministic-CBOR/COSE choice is the natural default so implementations share one serializer.)
 
 ---
 
@@ -98,7 +98,7 @@ Exchange must not foreclose post-quantum migration (the near-certain future reas
 ---
 
 ## 9. v1 invariants (exchange)
-1. Only the contact-bundle format and the exchange-plugin interface are normative; method, handshake, and origin vocabulary are pluggable.
+1. Only the contact-bundle format (§2), proof-of-possession (§3), the exchange-plugin interface (§4), and the local-provenance security rule (§6) are normative; method, handshake, and origin vocabulary are pluggable.
 2. Every bundle carries one Ed25519 self-signature (proof-of-possession) covering the whole bundle; a bundle failing PoP is rejected.
 3. The `origin` recorded with a key is written locally by the receiver from how it obtained the bundle — never taken from a peer-supplied value; the bundle carries no origin field. It is opaque to the protocol, which assigns it no meaning and derives no behaviour from it. Self-asserted facts in the bundle may be verified as claims; they are never the receiver's record.
 4. Exchange produces keystore entries and nothing else; the messaging protocol has no awareness of exchange, and there are no exchange hooks in the messaging core.
