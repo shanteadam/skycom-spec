@@ -529,12 +529,12 @@ UI shows a **gap marker** at that position in the thread. **No backfill, no requ
 
 ## 10. Receive pipeline
 
-Order matters; reassembly precedes dedup, dedup precedes DAG apply.
+Order matters; reassembly precedes decryption, verification precedes de-duplication (invariant #6 — that ordering is security-bearing), and de-duplication precedes DAG apply.
 
 0. **Reassemble fragments** (§8.6) — if the message arrived fragmented, park fragments and reassemble in index order; completeness = the assembled bytes verify as an envelope. Timeout-and-discard partials. Runs before everything.
-1. **De-dup by envelope hash** (§11.1) — same envelope arriving over multiple transports (or whole vs. fragmented) collapses to one. First arrival wins.
-2. **Decrypt** — trial decryption (§5.3): for each candidate key, ECDH(candidate_private, ephemeral_public) → AEAD decrypt, fail-fast on the tag. Where a transport supplied a key-ID hint (§6.3), use it to *prune* candidates first.
-3. **Verify signature** against the identified contact's per-relationship Ed25519 public key.
+1. **Decrypt** — trial decryption (§5.3): for each candidate key, ECDH(candidate_private, ephemeral_public) → AEAD decrypt, fail-fast on the tag. Where a transport supplied a key-ID hint (§6.3), use it to *prune* candidates first.
+2. **Verify signature** against the identified contact's per-relationship Ed25519 public key.
+3. **De-dup by envelope hash** (§11.1) — same envelope arriving over multiple transports (or whole vs. fragmented) collapses to one. First arrival wins.
 4. **Hold-and-wait / reconcile** (§9.6): if causal parents are not yet held, park; else apply.
 5. **DAG apply**: insert into the causal DAG; update per-participant "latest seen".
 6. **Display**: per client display policy.
