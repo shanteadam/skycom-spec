@@ -445,10 +445,11 @@ encrypted video cannot be single-AEAD-sealed or verified without buffering the w
   - **#4 identity** — is a large payload's message-id the hash of the whole thing (a full pass) or a
     **root hash of the chunk tree**? (Chunk-tree root enables streaming verification + partial
     integrity; changes how #4 is computed for these messages.)
-  - **`content_length` reopens** — reassembly deferred the `content_length` **streaming**
-    optimization because it presumes a chunked seal, which the single-AEAD construction does not
-    provide. A chunked seal supplies one, making streaming reassembly (decrypt chunk 0 → learn
-    extent → know how many chunks) available. Revisit that reassembly deferral.
+  - **An extent mechanism becomes possible** — streaming reassembly (decrypt chunk 0 → learn
+    extent → know how many chunks) presumes a chunked seal. The single-AEAD construction does not
+    provide one, so v1 carries no extent field and reassembly is verification-gated instead
+    (`design-doc-v1.md` §8.6). A chunked seal supplies the missing precondition; this track must
+    then define what extent information it needs, where it sits, and what it leaks.
   - **Receive pipeline** — the receive path assumes reassemble→whole-envelope→apply; a streamed payload may apply
     progressively and must never require full buffering. The RAM assumption gets fixed here.
   - **Framing composes unchanged** — a chunked-sealed payload is still fragmented/encoded by the
