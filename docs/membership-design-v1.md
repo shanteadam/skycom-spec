@@ -72,7 +72,7 @@ The **client** (or exchange plugin, or the user importing a key by hand) **autho
 
 ## 7. Context attribution — a "group message" is a read, not a wire fact
 
-The wire is **group-blind** (a message carries no group field). "Which context(s) does this message belong to?" is a **receive-side read** over the keyring records:
+The wire is **group-blind** (a message carries no group field). **Read that as a claim about protocol fields:** the envelope defines no group identifier for the core to set or read. A membership event's *sealed payload* does carry the group ID (§3), but that is typed content the core never inspects — and an ordinary group message carries no group ID at all, which is why the question below is answered by a read rather than a lookup. "Which context(s) does this message belong to?" is a **receive-side read** over the keyring records:
 
 - Given a DAG node, look up its **signing key** across **all** context records (contact and group).
 - Surface the node in **every** matching context (**0, 1, or many**). One message can appear in a group *and* a 1:1 if the same key is in both records.
