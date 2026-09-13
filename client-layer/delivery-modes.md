@@ -26,13 +26,25 @@ specification and client material is visible.
 
 ---
 
-*Section references inside the moved text (`§N`) are as they stood in `delivery-profiles-v1.md` and have **not** been renumbered to this document.*
+## Read this first — what is already known to be wrong
+
+This document is mined for its **analysis**. Its **mechanism** describes a model the protocol no longer has, and the following statements in it are known to be false under the current per-field-encryption model. They are left as written so the reasoning around them survives intact.
+
+- **§4.1** says the `sealed` profile is unchanged from `design-doc-v1.md` "except that the `profile=0` code is now explicit in the covered header." There is no profile code in the covered header. The construction it describes is otherwise the plain sealed message.
+- **§4.2** lists `profile_code` among the fields the signature binds, and its "Downgrade fails" bullet rests on `profile_code` being under the signature. Under per-field encryption there is no profile code to bind; downgrade resistance will need a different anchor, and that bullet should not be read as settled.
+- **§1**'s re-freeze note describes *adding* the `profile` field as a format-version change requiring a one-time vector re-freeze. Its mechanism is right and its direction inverts: the field's *removal* is the same kind of change.
+- **§2** specifies a registry the protocol no longer has. It is kept for its rationale — why a small enum code rather than a UUID or bit-flags, and why an unrecognized code must reject legibly rather than be coerced — which may inform how a client names and versions its own presets.
+
+Two further things a reader should know:
+
+- **Enforcement tags have been removed.** The source text tagged headings and sentences `[PROTOCOL-ENFORCED]` or `[CONFORMANCE-REQUIRED]`. Those tags are normative vocabulary and this document is not normative, so they are gone; where a tag carried a distinction the prose relied on — that a property held by construction versus by implementer discipline — that distinction is restated in plain words at the point it applied. This is the one departure from moving the text verbatim.
+- **Section references inside the moved text (`§N`) are as they stood in `delivery-profiles-v1.md`** and have **not** been renumbered to this document. Several now point at sections that were renumbered here or were not moved at all.
 
 ---
 
 *From `delivery-profiles-v1.md` §3.1, verbatim.*
 
-## 1. The profile field  `[PROTOCOL-ENFORCED]`
+## 1. The profile field
 
 Every message carries an explicit **`profile`** identifier **inside the authenticated (signed /
 sealed-covered) portion** of the envelope. Consequences:
@@ -60,7 +72,7 @@ sealed-covered) portion** of the envelope. Consequences:
 
 *From `delivery-profiles-v1.md` §3.2, verbatim.*
 
-## 2. Registry & extensibility  `[CONFORMANCE-REQUIRED]`
+## 2. Registry & extensibility
 
 `profile` is a **registered unsigned-integer code** from a spec-owned registry (same shape as the
 algorithm-agility registry). Rationale for the representation:
@@ -76,7 +88,7 @@ Each registry entry carries **the construction *and* its property/threat table**
 carries only the code. **Extensibility lives in the spec, not the plugin**: a new profile is a
 *registered, analyzed construction added to the menu* — never a shape a plugin conjures at runtime.
 
-**Forward-compat `[PROTOCOL-ENFORCED]`.** A receiver seeing an **unrecognized profile code** treats
+**Forward-compat.** A receiver seeing an **unrecognized profile code** treats
 it as a typed **"unsupported profile"** — surfaced, not crashed, and **never** silently coerced into
 a profile it does know. (Same discipline as algorithm-agility's unknown-algorithm rejection and the
 fragment parser's malformed→typed-reject.) Old clients reject new profiles **legibly** rather than
@@ -86,7 +98,7 @@ misinterpreting them.
 
 *From `delivery-profiles-v1.md` §3.3, verbatim.*
 
-## 3. One message = one profile  `[PROTOCOL-ENFORCED]`
+## 3. One message = one profile
 
 A single message has **one** profile — **the same security bound independent of transport**. There
 is no mixed-mode message that is `sealed` to some recipients and `plaintext-signed` to others.
@@ -121,7 +133,7 @@ For transports where even an opaque body is a problem (e.g. a ToS that flags cip
 recipient must still verify the message legitimately came from the sender. The body is **plaintext**
 (readable by the transport, by design); authenticity is a signature.
 
-`[PROTOCOL-ENFORCED]` **The signature binds the body *plus the full envelope context*** — the same
+**The signature binds the body *plus the full envelope context*** — the same
 fields a `sealed` envelope already commits to: `(plaintext_body, sender_persona, timestamp,
 causal_parents, profile_code, context/recipient binding)`. This makes `plaintext-signed` a
 **structural sibling of `sealed`** — same envelope, same content-addressed identity (#4), same causal
@@ -137,7 +149,7 @@ binding — with the body's confidentiality swapped from ciphertext to plaintext
   aunt cannot be replayed into a different relationship.
 - **Downgrade fails** — `profile_code` is under the signature.
 
-`[CONFORMANCE-REQUIRED]` The signing persona is the **per-relationship persona** for the recipient —
+A discipline the sending implementation must keep, not something verification enforces: the signing persona is the **per-relationship persona** for the recipient —
 **never** a stable identity key (signing with a stable key "so it verifies across channels" is the
 isolation footgun that lets two contacts correlate the sender, #14).
 
@@ -155,7 +167,7 @@ tolerate opaque *attachments* under some size / non-executable bound but not opa
 distinction **only the plugin knows about its transport** (see §9). Distinct from `decoy-sealed`
 (§5.3): here the plaintext body is the **real** (readable) message; the attachment is supplemental.
 
-`[CONFORMANCE-REQUIRED]` The construction binds the plaintext body and the sealed attachment together
+The construction must bind the plaintext body and the sealed attachment together
 (under the same envelope signature) so a body from one message cannot be mixed with an attachment
 from another.
 
